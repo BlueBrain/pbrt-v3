@@ -3,3 +3,11 @@ src/build
 src/bin
 src/objs
 .sconsign.dblite
+build
+debug
+*.cflags
+*.creator
+*.config
+*.cxxflags
+*.files
+*.includes

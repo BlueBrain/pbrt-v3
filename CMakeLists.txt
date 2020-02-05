@@ -1,74 +1,17 @@
-# TODO: many of the best practices described here
-# (https://www.slideshare.net/DanielPfeifer1/cmake-48475415) are violated
-# in this file. Would be nice to address some of these.
+cmake_minimum_required(VERSION 3.8)
 
-CMAKE_MINIMUM_REQUIRED ( VERSION 3.1.0 )
+# PROJECT DEFINITION
+project(pbrt)
 
-# For sanitizers
-SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+# APPEND TO MODULE PATH TO FIND EXTRA CMAKE FILES
+list (APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+list (APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
 
-PROJECT ( PBRT-V3 )
-
-OPTION(PBRT_FLOAT_AS_DOUBLE "Use 64-bit floats" OFF)
-
-IF (PBRT_FLOAT_AS_DOUBLE)
-  ADD_DEFINITIONS ( -D PBRT_FLOAT_AS_DOUBLE )
-ENDIF()
-
-OPTION(PBRT_SAMPLED_SPECTRUM "Use SampledSpectrum rather than RGBSpectrum" OFF)
-
-IF (PBRT_SAMPLED_SPECTRUM)
-  ADD_DEFINITIONS ( -D PBRT_SAMPLED_SPECTRUM )
-ENDIF()
-
-ENABLE_TESTING()
-
-if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message(STATUS "Setting build type to 'Release' as none was specified.")
-  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
-    "MinSizeRel" "RelWithDebInfo")
-endif()
-
-if(NOT IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/ext/openexr/OpenEXR")
-  message(FATAL_ERROR "The OpenEXR submodule directory is missing! "
-    "You probably did not clone the project with --recursive. It is possible to recover "
-    "by running \"git submodule update --init --recursive\"")
-endif()
-
-if(NOT IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/ext/glog/cmake")
-  message(FATAL_ERROR "The glog submodule directory is missing! "
-    "You probably did not clone the project with --recursive, or you first checked out "
-    "pbrt before it was added. It is possible to recover by running "
-    "\"git submodule update --init --recursive\"")
-endif()
-
-if(NOT IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/ext/ptex/src")
-  message(FATAL_ERROR "The ptex submodule directory is missing! "
-    "You probably did not clone the project with --recursive, or you first checked out "
-    "pbrt before it was added. It is possible to recover by running "
-    "\"git submodule update --init --recursive\"")
-endif()
-
-if(NOT IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/ext/zlib/doc")
-  message(FATAL_ERROR "The zlib submodule directory is missing! "
-    "You probably did not clone the project with --recursive, or you first checked out "
-    "pbrt before it was added. It is possible to recover by running "
-    "\"git submodule update --init --recursive\"")
-endif()
-
+# FIND REQUIRED PACKAGES
 FIND_PACKAGE ( Sanitizers )
 FIND_PACKAGE ( Threads )
 
-IF(CMAKE_BUILD_TYPE MATCHES RELEASE)
-  ADD_DEFINITIONS (-DNDEBUG)
-ENDIF()
-
-SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
-
-###########################################################################
-# Annoying compiler-specific details
-
+# TUNE COMPILES BASED ON TYPE
 IF(CMAKE_COMPILER_IS_GNUCXX)
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-conversion-null")
@@ -98,403 +41,246 @@ ELSEIF(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fp-model ${FP_MODEL}")
 ENDIF()
 
-IF(MSVC)
-  ADD_DEFINITIONS (/D _CRT_SECURE_NO_WARNINGS)
-ENDIF()
+# PBRT LIBRARY FILES
+# HEADERS
+list(APPEND PBRT_HEADERS src/accelerators/bvh.h)
+list(APPEND PBRT_HEADERS src/accelerators/kdtreeaccel.h)
+list(APPEND PBRT_HEADERS src/cameras/environment.h)
+list(APPEND PBRT_HEADERS src/cameras/orthographic.h)
+list(APPEND PBRT_HEADERS src/cameras/perspective.h)
+list(APPEND PBRT_HEADERS src/cameras/realistic.h)
+list(APPEND PBRT_HEADERS src/core/api.h)
+list(APPEND PBRT_HEADERS src/core/bssrdf.h)
+list(APPEND PBRT_HEADERS src/core/camera.h)
+list(APPEND PBRT_HEADERS src/core/efloat.h)
+list(APPEND PBRT_HEADERS src/core/error.h)
+list(APPEND PBRT_HEADERS src/core/fileutil.h)
+list(APPEND PBRT_HEADERS src/core/film.h)
+list(APPEND PBRT_HEADERS src/core/filter.h)
+list(APPEND PBRT_HEADERS src/core/floatfile.h)
+list(APPEND PBRT_HEADERS src/core/geometry.h)
+list(APPEND PBRT_HEADERS src/core/integrator.h)
+list(APPEND PBRT_HEADERS src/core/interaction.h)
+list(APPEND PBRT_HEADERS src/core/interpolation.h)
+list(APPEND PBRT_HEADERS src/core/light.h)
+list(APPEND PBRT_HEADERS src/core/lightdistrib.h)
+list(APPEND PBRT_HEADERS src/core/lowdiscrepancy.h)
+list(APPEND PBRT_HEADERS src/core/material.h)
+list(APPEND PBRT_HEADERS src/core/medium.h)
+list(APPEND PBRT_HEADERS src/core/memory.h)
+list(APPEND PBRT_HEADERS src/core/microfacet.h)
+list(APPEND PBRT_HEADERS src/core/mipmap.h)
+list(APPEND PBRT_HEADERS src/core/parallel.h)
+list(APPEND PBRT_HEADERS src/core/paramset.h)
+list(APPEND PBRT_HEADERS src/core/parser.h)
+list(APPEND PBRT_HEADERS src/core/pbrt.h)
+list(APPEND PBRT_HEADERS src/core/primitive.h)
+list(APPEND PBRT_HEADERS src/core/progressreporter.h)
+list(APPEND PBRT_HEADERS src/core/quaternion.h)
+list(APPEND PBRT_HEADERS src/core/reflection.h)
+list(APPEND PBRT_HEADERS src/core/rng.h)
+list(APPEND PBRT_HEADERS src/core/sampler.h)
+list(APPEND PBRT_HEADERS src/core/sampling.h)
+list(APPEND PBRT_HEADERS src/core/scene.h)
+list(APPEND PBRT_HEADERS src/core/shape.h)
+list(APPEND PBRT_HEADERS src/core/sobolmatrices.h)
+list(APPEND PBRT_HEADERS src/core/spectrum.h)
+list(APPEND PBRT_HEADERS src/core/stats.h)
+list(APPEND PBRT_HEADERS src/core/stringprint.h)
+list(APPEND PBRT_HEADERS src/core/texture.h)
+list(APPEND PBRT_HEADERS src/core/transform.h)
+list(APPEND PBRT_HEADERS src/filters/box.h)
+list(APPEND PBRT_HEADERS src/filters/gaussian.h)
+list(APPEND PBRT_HEADERS src/filters/mitchell.h)
+list(APPEND PBRT_HEADERS src/filters/sinc.h)
+list(APPEND PBRT_HEADERS src/filters/triangle.h)
+list(APPEND PBRT_HEADERS src/integrators/ao.h)
+list(APPEND PBRT_HEADERS src/integrators/bdpt.h)
+list(APPEND PBRT_HEADERS src/integrators/directlighting.h)
+list(APPEND PBRT_HEADERS src/integrators/mlt.h)
+list(APPEND PBRT_HEADERS src/integrators/path.h)
+list(APPEND PBRT_HEADERS src/integrators/sppm.h)
+list(APPEND PBRT_HEADERS src/integrators/volpath.h)
+list(APPEND PBRT_HEADERS src/integrators/whitted.h)
+list(APPEND PBRT_HEADERS src/lights/diffuse.h)
+list(APPEND PBRT_HEADERS src/lights/distant.h)
+list(APPEND PBRT_HEADERS src/lights/goniometric.h)
+list(APPEND PBRT_HEADERS src/lights/infinite.h)
+list(APPEND PBRT_HEADERS src/lights/point.h)
+list(APPEND PBRT_HEADERS src/lights/projection.h)
+list(APPEND PBRT_HEADERS src/lights/spot.h)
+list(APPEND PBRT_HEADERS src/materials/disney.h)
+list(APPEND PBRT_HEADERS src/materials/fourier.h)
+list(APPEND PBRT_HEADERS src/materials/glass.h)
+list(APPEND PBRT_HEADERS src/materials/hair.h)
+list(APPEND PBRT_HEADERS src/materials/kdsubsurface.h)
+list(APPEND PBRT_HEADERS src/materials/matte.h)
+list(APPEND PBRT_HEADERS src/materials/metal.h)
+list(APPEND PBRT_HEADERS src/materials/mirror.h)
+list(APPEND PBRT_HEADERS src/materials/mixmat.h)
+list(APPEND PBRT_HEADERS src/materials/plastic.h)
+list(APPEND PBRT_HEADERS src/materials/substrate.h)
+list(APPEND PBRT_HEADERS src/materials/subsurface.h)
+list(APPEND PBRT_HEADERS src/materials/translucent.h)
+list(APPEND PBRT_HEADERS src/materials/uber.h)
+list(APPEND PBRT_HEADERS src/media/grid.h)
+list(APPEND PBRT_HEADERS src/media/homogeneous.h)
+list(APPEND PBRT_HEADERS src/samplers/halton.h)
+list(APPEND PBRT_HEADERS src/samplers/maxmin.h)
+list(APPEND PBRT_HEADERS src/samplers/random.h)
+list(APPEND PBRT_HEADERS src/samplers/sobol.h)
+list(APPEND PBRT_HEADERS src/samplers/stratified.h)
+list(APPEND PBRT_HEADERS src/samplers/zerotwosequence.h)
+list(APPEND PBRT_HEADERS src/shapes/cone.h)
+list(APPEND PBRT_HEADERS src/shapes/curve.h)
+list(APPEND PBRT_HEADERS src/shapes/cylinder.h)
+list(APPEND PBRT_HEADERS src/shapes/disk.h)
+list(APPEND PBRT_HEADERS src/shapes/heightfield.h)
+list(APPEND PBRT_HEADERS src/shapes/hyperboloid.h)
+list(APPEND PBRT_HEADERS src/shapes/loopsubdiv.h)
+list(APPEND PBRT_HEADERS src/shapes/nurbs.h)
+list(APPEND PBRT_HEADERS src/shapes/paraboloid.h)
+list(APPEND PBRT_HEADERS src/shapes/sphere.h)
+list(APPEND PBRT_HEADERS src/shapes/triangle.h)
+list(APPEND PBRT_HEADERS src/textures/bilerp.h)
+list(APPEND PBRT_HEADERS src/textures/checkerboard.h)
+list(APPEND PBRT_HEADERS src/textures/constant.h)
+list(APPEND PBRT_HEADERS src/textures/dots.h)
+list(APPEND PBRT_HEADERS src/textures/fbm.h)
+list(APPEND PBRT_HEADERS src/textures/imagemap.h)
+list(APPEND PBRT_HEADERS src/textures/marble.h)
+list(APPEND PBRT_HEADERS src/textures/mix.h)
+list(APPEND PBRT_HEADERS src/textures/scale.h)
+list(APPEND PBRT_HEADERS src/textures/uv.h)
+list(APPEND PBRT_HEADERS src/textures/windy.h)
+list(APPEND PBRT_HEADERS src/textures/wrinkled.h)
 
-INCLUDE (CheckIncludeFiles)
+# SOURCES
+list(APPEND PBRT_HEADERS src/accelerators/bvh.cpp)
+list(APPEND PBRT_HEADERS src/accelerators/kdtreeaccel.cpp)
+list(APPEND PBRT_HEADERS src/cameras/environment.cpp)
+list(APPEND PBRT_HEADERS src/cameras/orthographic.cpp)
+list(APPEND PBRT_HEADERS src/cameras/perspective.cpp)
+list(APPEND PBRT_HEADERS src/cameras/realistic.cpp)
+list(APPEND PBRT_HEADERS src/core/api.cpp)
+list(APPEND PBRT_HEADERS src/core/bssrdf.cpp)
+list(APPEND PBRT_HEADERS src/core/camera.cpp)
+list(APPEND PBRT_HEADERS src/core/efloat.cpp)
+list(APPEND PBRT_HEADERS src/core/error.cpp)
+list(APPEND PBRT_HEADERS src/core/fileutil.cpp)
+list(APPEND PBRT_HEADERS src/core/film.cpp)
+list(APPEND PBRT_HEADERS src/core/filter.cpp)
+list(APPEND PBRT_HEADERS src/core/floatfile.cpp)
+list(APPEND PBRT_HEADERS src/core/geometry.cpp)
+list(APPEND PBRT_HEADERS src/core/integrator.cpp)
+list(APPEND PBRT_HEADERS src/core/interaction.cpp)
+list(APPEND PBRT_HEADERS src/core/interpolation.cpp)
+list(APPEND PBRT_HEADERS src/core/light.cpp)
+list(APPEND PBRT_HEADERS src/core/lightdistrib.cpp)
+list(APPEND PBRT_HEADERS src/core/lowdiscrepancy.cpp)
+list(APPEND PBRT_HEADERS src/core/material.cpp)
+list(APPEND PBRT_HEADERS src/core/medium.cpp)
+list(APPEND PBRT_HEADERS src/core/memory.cpp)
+list(APPEND PBRT_HEADERS src/core/microfacet.cpp)
+list(APPEND PBRT_HEADERS src/core/parallel.cpp)
+list(APPEND PBRT_HEADERS src/core/paramset.cpp)
+list(APPEND PBRT_HEADERS src/core/parser.cpp)
+list(APPEND PBRT_HEADERS src/core/primitive.cpp)
+list(APPEND PBRT_HEADERS src/core/progressreporter.cpp)
+list(APPEND PBRT_HEADERS src/core/quaternion.cpp)
+list(APPEND PBRT_HEADERS src/core/reflection.cpp)
+list(APPEND PBRT_HEADERS src/core/sampler.cpp)
+list(APPEND PBRT_HEADERS src/core/sampling.cpp)
+list(APPEND PBRT_HEADERS src/core/scene.cpp)
+list(APPEND PBRT_HEADERS src/core/shape.cpp)
+list(APPEND PBRT_HEADERS src/core/sobolmatrices.cpp)
+list(APPEND PBRT_HEADERS src/core/spectrum.cpp)
+list(APPEND PBRT_HEADERS src/core/stats.cpp)
+list(APPEND PBRT_HEADERS src/core/texture.cpp)
+list(APPEND PBRT_HEADERS src/core/transform.cpp)
+list(APPEND PBRT_HEADERS src/filters/box.cpp)
+list(APPEND PBRT_HEADERS src/filters/gaussian.cpp)
+list(APPEND PBRT_HEADERS src/filters/mitchell.cpp)
+list(APPEND PBRT_HEADERS src/filters/sinc.cpp)
+list(APPEND PBRT_HEADERS src/filters/triangle.cpp)
+list(APPEND PBRT_HEADERS src/integrators/ao.cpp)
+list(APPEND PBRT_HEADERS src/integrators/bdpt.cpp)
+list(APPEND PBRT_HEADERS src/integrators/directlighting.cpp)
+list(APPEND PBRT_HEADERS src/integrators/mlt.cpp)
+list(APPEND PBRT_HEADERS src/integrators/path.cpp)
+list(APPEND PBRT_HEADERS src/integrators/sppm.cpp)
+list(APPEND PBRT_HEADERS src/integrators/volpath.cpp)
+list(APPEND PBRT_HEADERS src/integrators/whitted.cpp)
+list(APPEND PBRT_HEADERS src/lights/diffuse.cpp)
+list(APPEND PBRT_HEADERS src/lights/distant.cpp)
+list(APPEND PBRT_HEADERS src/lights/goniometric.cpp)
+list(APPEND PBRT_HEADERS src/lights/infinite.cpp)
+list(APPEND PBRT_HEADERS src/lights/point.cpp)
+list(APPEND PBRT_HEADERS src/lights/projection.cpp)
+list(APPEND PBRT_HEADERS src/lights/spot.cpp)
+list(APPEND PBRT_HEADERS src/materials/disney.cpp)
+list(APPEND PBRT_HEADERS src/materials/fourier.cpp)
+list(APPEND PBRT_HEADERS src/materials/glass.cpp)
+list(APPEND PBRT_HEADERS src/materials/hair.cpp)
+list(APPEND PBRT_HEADERS src/materials/kdsubsurface.cpp)
+list(APPEND PBRT_HEADERS src/materials/matte.cpp)
+list(APPEND PBRT_HEADERS src/materials/metal.cpp)
+list(APPEND PBRT_HEADERS src/materials/mirror.cpp)
+list(APPEND PBRT_HEADERS src/materials/mixmat.cpp)
+list(APPEND PBRT_HEADERS src/materials/plastic.cpp)
+list(APPEND PBRT_HEADERS src/materials/substrate.cpp)
+list(APPEND PBRT_HEADERS src/materials/subsurface.cpp)
+list(APPEND PBRT_HEADERS src/materials/translucent.cpp)
+list(APPEND PBRT_HEADERS src/materials/uber.cpp)
+list(APPEND PBRT_HEADERS src/media/grid.cpp)
+list(APPEND PBRT_HEADERS src/media/homogeneous.cpp)
+list(APPEND PBRT_HEADERS src/samplers/halton.cpp)
+list(APPEND PBRT_HEADERS src/samplers/maxmin.cpp)
+list(APPEND PBRT_HEADERS src/samplers/random.cpp)
+list(APPEND PBRT_HEADERS src/samplers/sobol.cpp)
+list(APPEND PBRT_HEADERS src/samplers/stratified.cpp)
+list(APPEND PBRT_HEADERS src/samplers/zerotwosequence.cpp)
+list(APPEND PBRT_HEADERS src/shapes/cone.cpp)
+list(APPEND PBRT_HEADERS src/shapes/curve.cpp)
+list(APPEND PBRT_HEADERS src/shapes/cylinder.cpp)
+list(APPEND PBRT_HEADERS src/shapes/disk.cpp)
+list(APPEND PBRT_HEADERS src/shapes/heightfield.cpp)
+list(APPEND PBRT_HEADERS src/shapes/hyperboloid.cpp)
+list(APPEND PBRT_HEADERS src/shapes/loopsubdiv.cpp)
+list(APPEND PBRT_HEADERS src/shapes/nurbs.cpp)
+list(APPEND PBRT_HEADERS src/shapes/paraboloid.cpp)
+list(APPEND PBRT_HEADERS src/shapes/sphere.cpp)
+list(APPEND PBRT_HEADERS src/shapes/triangle.cpp)
+list(APPEND PBRT_HEADERS src/textures/bilerp.cpp)
+list(APPEND PBRT_HEADERS src/textures/checkerboard.cpp)
+list(APPEND PBRT_HEADERS src/textures/constant.cpp)
+list(APPEND PBRT_HEADERS src/textures/dots.cpp)
+list(APPEND PBRT_HEADERS src/textures/fbm.cpp)
+list(APPEND PBRT_HEADERS src/textures/imagemap.cpp)
+list(APPEND PBRT_HEADERS src/textures/marble.cpp)
+list(APPEND PBRT_HEADERS src/textures/mix.cpp)
+list(APPEND PBRT_HEADERS src/textures/scale.cpp)
+list(APPEND PBRT_HEADERS src/textures/uv.cpp)
+list(APPEND PBRT_HEADERS src/textures/windy.cpp)
+list(APPEND PBRT_HEADERS src/textures/wrinkled.cpp)
 
-CHECK_INCLUDE_FILES ( alloca.h HAVE_ALLOCA_H )
-IF ( HAVE_ALLOCA_H )
-  ADD_DEFINITIONS ( -D PBRT_HAVE_ALLOCA_H )
-ENDIF ()
-
-CHECK_INCLUDE_FILES ( memory.h HAVE_MEMORY_H )
-IF ( HAVE_MEMORY_H )
-  ADD_DEFINITIONS ( -D PBRT_HAVE_MEMORY_H )
-ENDIF ()
-
-###########################################################################
-# Check for various C++11 features and set preprocessor variables or
-# define workarounds.
-
-INCLUDE (CheckCXXSourceCompiles)
-INCLUDE (CheckCXXSourceRuns)
-
-CHECK_CXX_SOURCE_COMPILES (
-  "int main() { float x = 0x1p-32f; }"
-  HAVE_HEX_FP_CONSTANTS )
-IF ( HAVE_HEX_FP_CONSTANTS )
-  ADD_DEFINITIONS ( -D PBRT_HAVE_HEX_FP_CONSTANTS )
-ENDIF ()
-
-CHECK_CXX_SOURCE_COMPILES (
-  "int main() { int x = 0b101011; }"
-  HAVE_BINARY_CONSTANTS )
-IF ( HAVE_BINARY_CONSTANTS )
-  ADD_DEFINITIONS ( -D PBRT_HAVE_BINARY_CONSTANTS )
-ENDIF ()
-
-CHECK_CXX_SOURCE_COMPILES (
-  "int main() { constexpr int x = 0; }"
-  HAVE_CONSTEXPR )
-IF ( HAVE_CONSTEXPR )
-  ADD_DEFINITIONS ( -D PBRT_HAVE_CONSTEXPR )
-  ADD_DEFINITIONS ( -D PBRT_CONSTEXPR=constexpr )
-ELSE ()
-  ADD_DEFINITIONS ( -D PBRT_CONSTEXPR=const )
-ENDIF ()
-
-CHECK_CXX_SOURCE_COMPILES (
-  "struct alignas(32) Foo { char x; }; int main() { }"
-  HAVE_ALIGNAS )
-IF ( HAVE_ALIGNAS )
-  ADD_DEFINITIONS ( -D PBRT_HAVE_ALIGNAS )
-ENDIF ()
-
-CHECK_CXX_SOURCE_COMPILES (
-  "int main() { int x = alignof(double); }"
-  HAVE_ALIGNOF )
-IF ( HAVE_ALIGNOF )
-  ADD_DEFINITIONS ( -D PBRT_HAVE_ALIGNOF )
-ENDIF ()
-
-CHECK_CXX_SOURCE_RUNS ( "
-#include <signal.h>
-#include <string.h>
-#include <sys/time.h>
-void ReportProfileSample(int, siginfo_t *, void *) { }
-int main() {
-    struct sigaction sa;
-    memset(&sa, 0, sizeof(sa));
-    sa.sa_sigaction = ReportProfileSample;
-    sa.sa_flags = SA_RESTART | SA_SIGINFO;
-    sigemptyset(&sa.sa_mask);
-    sigaction(SIGPROF, &sa, NULL);
-    static struct itimerval timer;
-    return setitimer(ITIMER_PROF, &timer, NULL) == 0 ? 0 : 1;
-}
-" HAVE_ITIMER )
-IF ( HAVE_ITIMER )
-  ADD_DEFINITIONS ( -D PBRT_HAVE_ITIMER )
-ENDIF()
-
-CHECK_CXX_SOURCE_COMPILES ( "
-class Bar { public: Bar() { x = 0; } float x; };
-struct Foo { union { int x[10]; Bar b; }; Foo() : b() { } };
-int main() { Foo f; }
-" HAVE_NONPOD_IN_UNIONS )
-IF ( HAVE_NONPOD_IN_UNIONS )
-  ADD_DEFINITIONS ( -D PBRT_HAVE_NONPOD_IN_UNIONS )
-ENDIF ()
-
-CHECK_CXX_SOURCE_COMPILES ( "
-#include <fcntl.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-int main() {
-   int fd = open(\"foo\", O_RDONLY);
-   struct stat s;
-   fstat(fd, &s);
-   size_t len = s.st_size;
-   void *ptr = mmap(0, len, PROT_READ, MAP_FILE | MAP_SHARED, fd, 0);
-   munmap(ptr, len);   
-}
-" HAVE_MMAP )
-if ( HAVE_MMAP )
-  ADD_DEFINITIONS ( -D PBRT_HAVE_MMAP )
-ENDIF ()
-
-########################################
-# noinline
-
-CHECK_CXX_SOURCE_COMPILES (
-"__declspec(noinline) void foo() { }
-int main() { }"
-HAVE_DECLSPEC_NOINLINE )
-
-CHECK_CXX_SOURCE_COMPILES (
-"__attribute__((noinline)) void foo() { }
-int main() { }"
-HAVE_ATTRIBUTE_NOINLINE )
-
-IF ( HAVE_ATTRIBUTE_NOINLINE )
-  ADD_DEFINITIONS ( -D "PBRT_NOINLINE=__attribute__\\(\\(noinline\\)\\)" )
-ELSEIF ( HAVE_DECLSPEC_NOINLINE )
-  ADD_DEFINITIONS ( -D "PBRT_NOINLINE=__declspec(noinline)" )
-ELSE ()
-  ADD_DEFINITIONS ( -D PBRT_NOINLINE )
-ENDIF ()
-
-########################################
-# Aligned memory allocation
-
-CHECK_CXX_SOURCE_COMPILES ( "
-#include <malloc.h>
-int main() { void * ptr = _aligned_malloc(1024, 32); }
-" HAVE__ALIGNED_MALLOC )
-
-CHECK_CXX_SOURCE_COMPILES ( "
-#include <stdlib.h>
-int main() {
-  void *ptr;
-  posix_memalign(&ptr, 32, 1024);
-} " HAVE_POSIX_MEMALIGN )
-
-CHECK_CXX_SOURCE_COMPILES ( "
-#include <malloc.h>
-int main() {
-    void *ptr = memalign(32, 1024);
-} " HAVE_MEMALIGN )
-
-IF ( HAVE__ALIGNED_MALLOC )
-  ADD_DEFINITIONS ( -D PBRT_HAVE__ALIGNED_MALLOC )
-ELSEIF ( HAVE_POSIX_MEMALIGN )
-  ADD_DEFINITIONS ( -D PBRT_HAVE_POSIX_MEMALIGN )
-ELSEIF ( HAVE_MEMALIGN )
-  ADD_DEFINITIONS ( -D PBRTHAVE_MEMALIGN )
-ELSE ()
-  MESSAGE ( SEND_ERROR "Unable to find a way to allocate aligned memory" )
-ENDIF ()
-
-########################################
-# thread-local variables
-
-CHECK_CXX_SOURCE_COMPILES ( "
-#ifdef __CYGWIN__
-// Hack to work around https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64697
-#error \"No thread_local on cygwin\"
-#endif  // __CYGWIN__
-thread_local int x; int main() { }
-" HAVE_THREAD_LOCAL )
-
-CHECK_CXX_SOURCE_COMPILES ( "
-__declspec(thread) int x; int main() { }
-" HAVE_DECLSPEC_THREAD )
-
-CHECK_CXX_SOURCE_COMPILES ( "
-__thread int x; int main() { }
-" HAVE___THREAD )
-
-IF ( HAVE_THREAD_LOCAL )
-  ADD_DEFINITIONS ( -D PBRT_THREAD_LOCAL=thread_local )
-ELSEIF ( HAVE___THREAD )
-  ADD_DEFINITIONS ( -D PBRT_THREAD_LOCAL=__thread )
-ELSEIF ( HAVE_DECLSPEC_THREAD )
-  ADD_DEFINITIONS ( -D "PBRT_THREAD_LOCAL=__declspec(thread)" )
-ELSE ()
-  MESSAGE ( SEND_ERROR "Unable to find a way to declare a thread-local variable")
-ENDIF ()
-
-###########################################################################
-# zlib
-
-FIND_PACKAGE ( ZLIB )
-IF(NOT ZLIB_FOUND)
-  # Build zlib
-  SET(ZLIB_BUILD_STATIC_LIBS ON CACHE BOOL " " FORCE)
-  SET(ZLIB_BUILD_SHARED_LIBS OFF CACHE BOOL " " FORCE)
-  ADD_SUBDIRECTORY(src/ext/zlib)
-
-  SET(ZLIB_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/ext/zlib")
-  SET(ZLIB_LIBRARY zlibstatic)
-  SET_PROPERTY(TARGET zlibstatic PROPERTY FOLDER "ext")
-  INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/src/ext/zlib")
-ENDIF()
-INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIRS})
-
-###########################################################################
-# OpenEXR
-
-SET(ILMBASE_NAMESPACE_VERSIONING OFF CACHE BOOL " " FORCE)
-SET(OPENEXR_NAMESPACE_VERSIONING OFF CACHE BOOL " " FORCE)
-SET(OPENEXR_BUILD_SHARED_LIBS    OFF CACHE BOOL " " FORCE)
-SET(ILMBASE_BUILD_SHARED_LIBS    OFF CACHE BOOL " " FORCE)
-
-ADD_SUBDIRECTORY(src/ext/openexr)
-
-SET_PROPERTY(TARGET IexMath eLut toFloat b44ExpLogTable dwaLookups IlmThread Half Iex Imath IlmImf PROPERTY FOLDER "ext")
-
-INCLUDE_DIRECTORIES (
-  src/ext/openexr/IlmBase/Imath
-  src/ext/openexr/IlmBase/Half
-  src/ext/openexr/IlmBase/Iex
-  src/ext/openexr/OpenEXR/IlmImf
-  ${CMAKE_BINARY_DIR}/src/ext/openexr/IlmBase/config
-  ${CMAKE_BINARY_DIR}/src/ext/openexr/OpenEXR/config
-)
-IF(WIN32)
-  SET(OPENEXR_LIBS IlmImf Imath Half ${ZLIB_LIBRARY})
-ELSE()
-  SET(OPENEXR_LIBS IlmImf Imath Half)
-ENDIF()
-
-###########################################################################
-# glog
-
-SET(WITH_GFLAGS OFF CACHE BOOL "Use gflags")
-SET(BUILD_SHARED_LIBS OFF CACHE BOOL " " FORCE)
-IF(WIN32)
-  ADD_DEFINITIONS( -D GOOGLE_GLOG_DLL_DECL= )
-ENDIF()
-ADD_SUBDIRECTORY(src/ext/glog)
-SET_PROPERTY(TARGET glog logging_unittest demangle_unittest utilities_unittest stl_logging_unittest PROPERTY FOLDER "ext")
-INCLUDE_DIRECTORIES (
+# DEPENDENCY GLOG
+set( WITH_GFLAGS OFF CACHE BOOL "Use gflags" )
+set( BUILD_SHARED_LIBS OFF CACHE BOOL " " FORCE )
+add_subdirectory( src/ext/glog )
+include_directories (
   src/ext/glog/src
-  ${CMAKE_BINARY_DIR}/src/ext/glog
+  ${PROJECT_BINARY_DIR}/src/ext/glog
 )
 
-###########################################################################
-# ptex
+# CREATE LIBRARY
+add_library(pbrt STATIC ${PBRT_HEADERS} ${PBRT_SOURCES})
 
-# work around https://github.com/wdas/ptex/issues/28
-IF ( CMAKE_BUILD_TYPE )
-  STRING ( TOLOWER ${CMAKE_BUILD_TYPE} LOWER_BUILD_TYPE )
-  SET ( ENV{FLAVOR} ${LOWER_BUILD_TYPE} )
-ENDIF ()
-SET(PTEX_BUILD_SHARED_LIBS OFF CACHE BOOL " " FORCE)
+# SANITETIZE
+add_sanitizers ( pbrt )
 
-SET(CMAKE_MACOSX_RPATH 1)
-IF ( WIN32 )
-  ADD_DEFINITIONS ( /D PTEX_STATIC)
-ENDIF ()
-ADD_SUBDIRECTORY(src/ext/ptex)
-SET_PROPERTY(TARGET Ptex_static ptxinfo halftest ftest rtest wtest PROPERTY FOLDER "ext")
-INCLUDE_DIRECTORIES ( src/ext/ptex/src/ptex )
-
-###########################################################################
-# On to pbrt...
-
-SET ( PBRT_CORE_SOURCE
-  src/core/api.cpp
-  src/core/bssrdf.cpp
-  src/core/camera.cpp
-  src/core/efloat.cpp
-  src/core/error.cpp
-  src/core/fileutil.cpp
-  src/core/film.cpp
-  src/core/filter.cpp
-  src/core/floatfile.cpp
-  src/core/geometry.cpp
-  src/core/imageio.cpp
-  src/core/integrator.cpp
-  src/core/interaction.cpp
-  src/core/interpolation.cpp
-  src/core/light.cpp
-  src/core/lightdistrib.cpp
-  src/core/lowdiscrepancy.cpp
-  src/core/material.cpp
-  src/core/medium.cpp
-  src/core/memory.cpp
-  src/core/microfacet.cpp
-  src/core/parallel.cpp
-  src/core/paramset.cpp
-  src/core/parser.cpp
-  src/core/primitive.cpp
-  src/core/progressreporter.cpp
-  src/core/quaternion.cpp
-  src/core/reflection.cpp
-  src/core/sampler.cpp
-  src/core/sampling.cpp
-  src/core/scene.cpp
-  src/core/shape.cpp
-  src/core/sobolmatrices.cpp
-  src/core/spectrum.cpp
-  src/core/stats.cpp
-  src/core/texture.cpp
-  src/core/transform.cpp
-  )
-
-SET ( PBRT_CORE_HEADERS
-  src/core/api.h
-  src/core/bssrdf.h
-  src/core/camera.h
-  src/core/efloat.h
-  src/core/error.h
-  src/core/fileutil.h
-  src/core/film.h
-  src/core/filter.h
-  src/core/floatfile.h
-  src/core/geometry.h
-  src/core/imageio.h
-  src/core/integrator.h
-  src/core/interaction.h
-  src/core/interpolation.h
-  src/core/light.h
-  src/core/lowdiscrepancy.h
-  src/core/material.h
-  src/core/medium.h
-  src/core/memory.h
-  src/core/microfacet.h
-  src/core/mipmap.h
-  src/core/parallel.h
-  src/core/paramset.h
-  src/core/parser.h
-  src/core/pbrt.h
-  src/core/primitive.h
-  src/core/progressreporter.h
-  src/core/quaternion.h
-  src/core/reflection.h
-  src/core/rng.h
-  src/core/sampler.h
-  src/core/sampling.h
-  src/core/scene.h
-  src/core/shape.h
-  src/core/sobolmatrices.h
-  src/core/spectrum.h
-  src/core/stats.h
-  src/core/stringprint.h
-  src/core/texture.h
-  src/core/transform.h
-  )
-
-FILE ( GLOB PBRT_SOURCE
-  src/ext/*
-  src/accelerators/*
-  src/cameras/*
-  src/filters/*
-  src/integrators/*
-  src/lights/*
-  src/materials/*
-  src/samplers/*
-  src/shapes/*
-  src/textures/*
-  src/media/*
-  )
-
-INCLUDE_DIRECTORIES ( src )
-INCLUDE_DIRECTORIES ( src/core )
-
-# Visual Studio source folders
-SOURCE_GROUP (core REGULAR_EXPRESSION src/core/.*)
-SOURCE_GROUP (ext REGULAR_EXPRESSION src/ext/.*)
-SOURCE_GROUP (accelerators REGULAR_EXPRESSION src/accelerators/.*)
-SOURCE_GROUP (cameras REGULAR_EXPRESSION src/cameras/.*)
-SOURCE_GROUP (filters REGULAR_EXPRESSION src/filters/.*)
-SOURCE_GROUP (integrators REGULAR_EXPRESSION src/integrators/.*)
-SOURCE_GROUP (lights REGULAR_EXPRESSION src/lights/.*)
-SOURCE_GROUP (materials REGULAR_EXPRESSION src/materials/.*)
-SOURCE_GROUP (samplers REGULAR_EXPRESSION src/samplers/.*)
-SOURCE_GROUP (shapes REGULAR_EXPRESSION src/shapes/.*)
-SOURCE_GROUP (textures REGULAR_EXPRESSION src/textures/.*)
-SOURCE_GROUP (media REGULAR_EXPRESSION src/media/.*)
-
-###########################################################################
-# pbrt libraries and executables
-
-ADD_LIBRARY ( pbrt STATIC
-  ${PBRT_YACC_LEX_SOURCE}
-  ${PBRT_CORE_SOURCE}
-  ${PBRT_CORE_HEADERS}
-  ${PBRT_SOURCE}
-  )
-ADD_SANITIZERS ( pbrt )
-
-# A non-exhaustive but pretty representative set..
-# Note that we work-around shoddy c++11 support in MSVC2013
-# (constexpr, etc.), so don't test for that stuff here
-SET ( PBRT_CXX11_FEATURES
+# ENABLED SPECIFIC C++11 FFEATURES
+set ( PBRT_CXX11_FEATURES
   cxx_auto_type
   cxx_explicit_conversions
   cxx_lambdas
@@ -502,76 +288,45 @@ SET ( PBRT_CXX11_FEATURES
   cxx_range_for
   cxx_static_assert
 )
-TARGET_COMPILE_FEATURES ( pbrt PRIVATE ${PBRT_CXX11_FEATURES} )
+target_compile_features ( pbrt PRIVATE ${PBRT_CXX11_FEATURES} )
 
-IF (WIN32)
-  # Avoid a name clash when building on Visual Studio
-  SET_TARGET_PROPERTIES ( pbrt PROPERTIES OUTPUT_NAME libpbrt )
-ENDIF()
+# LIBRARY LINK
+target_link_libraries(pbrt PUBLIC glog)
 
-SET(ALL_PBRT_LIBS
-  pbrt
-  ${CMAKE_THREAD_LIBS_INIT}
-  ${OPENEXR_LIBS}
-  glog
-  Ptex_static
-  ${ZLIB_LIBRARY}
-)
+# LIBRARY INCLUDES
+target_include_directories(
+    pbrt PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/core>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
-# Main renderer
-ADD_EXECUTABLE ( pbrt_exe src/main/pbrt.cpp )
-ADD_SANITIZERS ( pbrt_exe )
+# DEVELOPER OPTIONS
+option(PBRT_FLOAT_AS_DOUBLE "Use 64-bit floats" OFF)
+if (PBRT_FLOAT_AS_DOUBLE)
+  target_compile_definitions( pbrt PRIVATE -D PBRT_FLOAT_AS_DOUBLE )
+endif()
 
-SET_TARGET_PROPERTIES ( pbrt_exe PROPERTIES OUTPUT_NAME pbrt )
-TARGET_COMPILE_FEATURES ( pbrt_exe PRIVATE ${PBRT_CXX11_FEATURES} )
-TARGET_LINK_LIBRARIES ( pbrt_exe ${ALL_PBRT_LIBS} )
+option(PBRT_SAMPLED_SPECTRUM "Use SampledSpectrum rather than RGBSpectrum" OFF)
+if (PBRT_SAMPLED_SPECTRUM)
+  target_compile_definitions( pbrt PRIVATE -D PBRT_SAMPLED_SPECTRUM )
+endif()
 
-# Tools
-ADD_EXECUTABLE ( bsdftest src/tools/bsdftest.cpp )
-ADD_SANITIZERS ( bsdftest )
-TARGET_COMPILE_FEATURES ( bsdftest PRIVATE ${PBRT_CXX11_FEATURES} )
-TARGET_LINK_LIBRARIES ( bsdftest ${ALL_PBRT_LIBS} )
+# HARDCODED DYNAMIC OPTIONS
+include(PbrtAddDefinitions)
 
-ADD_EXECUTABLE ( imgtool src/tools/imgtool.cpp )
-ADD_SANITIZERS ( imgtool )
-TARGET_COMPILE_FEATURES ( imgtool PRIVATE ${PBRT_CXX11_FEATURES} )
-TARGET_LINK_LIBRARIES ( imgtool ${ALL_PBRT_LIBS} )
+# INSTALLATION
+install(
+    TARGETS pbrt
+    EXPORT pbrt-config
+    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/runtime
+    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
-ADD_EXECUTABLE ( obj2pbrt src/tools/obj2pbrt.cpp )
-TARGET_COMPILE_FEATURES ( obj2pbrt PRIVATE ${PBRT_CXX11_FEATURES} )
-ADD_SANITIZERS ( obj2pbrt )
+install(
+    EXPORT pbrt-config
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/cmake/pbrt)
 
-ADD_EXECUTABLE ( cyhair2pbrt src/tools/cyhair2pbrt.cpp )
-ADD_SANITIZERS ( cyhair2pbrt )
-
-# Unit test
-
-FILE ( GLOB PBRT_TEST_SOURCE
-  src/tests/*.cpp
-  src/tests/gtest/*.cc
-  )
-
-ADD_EXECUTABLE ( pbrt_test ${PBRT_TEST_SOURCE} )
-ADD_SANITIZERS ( pbrt_test )
-TARGET_COMPILE_FEATURES ( pbrt_test PRIVATE ${PBRT_CXX11_FEATURES} )
-TARGET_LINK_LIBRARIES ( pbrt_test ${ALL_PBRT_LIBS} )
-
-ADD_TEST ( pbrt_unit_test pbrt_test )
-
-# Installation
-
-INSTALL ( TARGETS
-  pbrt_exe
-  bsdftest
-  imgtool
-  obj2pbrt
-  cyhair2pbrt
-  DESTINATION
-  bin
-  )
-
-INSTALL ( TARGETS
-  pbrt
-  DESTINATION
-  lib
-  )
+install(
+    DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/src/
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/include/pbrt
+    FILES_MATCHING PATTERN "*.h")

@@ -98,7 +98,7 @@
 #include "shapes/paraboloid.h"
 #include "shapes/sphere.h"
 #include "shapes/triangle.h"
-#include "shapes/plymesh.h"
+//#include "shapes/plymesh.h"
 #include "textures/bilerp.h"
 #include "textures/checkerboard.h"
 #include "textures/constant.h"
@@ -107,7 +107,7 @@
 #include "textures/imagemap.h"
 #include "textures/marble.h"
 #include "textures/mix.h"
-#include "textures/ptex.h"
+//#include "textures/ptex.h"
 #include "textures/scale.h"
 #include "textures/uv.h"
 #include "textures/windy.h"
@@ -515,9 +515,7 @@ std::vector<std::shared_ptr<Shape>> MakeShapes(const std::string &name,
             shapes = CreateTriangleMeshShape(object2world, world2object,
                                              reverseOrientation, paramSet,
                                              &*graphicsState.floatTextures);
-    } else if (name == "plymesh")
-        shapes = CreatePLYMesh(object2world, world2object, reverseOrientation,
-                               paramSet, &*graphicsState.floatTextures);
+    }
     else if (name == "heightfield")
         shapes = CreateHeightfield(object2world, world2object,
                                    reverseOrientation, paramSet);
@@ -634,8 +632,6 @@ std::shared_ptr<Texture<Float>> MakeFloatTexture(const std::string &name,
         tex = CreateMarbleFloatTexture(tex2world, tp);
     else if (name == "windy")
         tex = CreateWindyFloatTexture(tex2world, tp);
-    else if (name == "ptex")
-        tex = CreatePtexFloatTexture(tex2world, tp);
     else
         Warning("Float texture \"%s\" unknown.", name.c_str());
     tp.ReportUnused();
@@ -670,8 +666,6 @@ std::shared_ptr<Texture<Spectrum>> MakeSpectrumTexture(
         tex = CreateMarbleSpectrumTexture(tex2world, tp);
     else if (name == "windy")
         tex = CreateWindySpectrumTexture(tex2world, tp);
-    else if (name == "ptex")
-        tex = CreatePtexSpectrumTexture(tex2world, tp);
     else
         Warning("Spectrum texture \"%s\" unknown.", name.c_str());
     tp.ReportUnused();
