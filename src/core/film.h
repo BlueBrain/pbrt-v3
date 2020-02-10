@@ -77,6 +77,7 @@ class Film {
     std::unique_ptr<Filter> filter;
     const std::string filename;
     Bounds2i croppedPixelBounds;
+    std::vector<Float> _rgb;
 
   private:
     // Film Private Data
