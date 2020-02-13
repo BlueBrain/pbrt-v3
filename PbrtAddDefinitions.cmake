@@ -1,17 +1,17 @@
 if(CMAKE_BUILD_TYPE MATCHES RELEASE)
-  target_compile_definitions( pbrt PRIVATE -DNDEBUG)
+  target_compile_definitions( pbrt PUBLIC -DNDEBUG)
 endif()
 
 include (CheckIncludeFiles)
 
 check_include_files ( alloca.h HAVE_ALLOCA_H )
 if ( HAVE_ALLOCA_H )
-  target_compile_definitions ( pbrt PRIVATE -D PBRT_HAVE_ALLOCA_H )
+  target_compile_definitions ( pbrt PUBLIC -D PBRT_HAVE_ALLOCA_H )
 endif ()
 
 check_include_files ( memory.h HAVE_MEMORY_H )
 if ( HAVE_MEMORY_H )
-  target_compile_definitions ( pbrt PRIVATE -D PBRT_HAVE_MEMORY_H )
+  target_compile_definitions ( pbrt PUBLIC -D PBRT_HAVE_MEMORY_H )
 endif ()
 
 ###########################################################################
@@ -25,38 +25,38 @@ check_cxx_source_compiles (
   "int main() { float x = 0x1p-32f; }"
   HAVE_HEX_FP_CONSTANTS )
 if ( HAVE_HEX_FP_CONSTANTS )
-  target_compile_definitions ( pbrt PRIVATE -D PBRT_HAVE_HEX_FP_CONSTANTS )
+  target_compile_definitions ( pbrt PUBLIC -D PBRT_HAVE_HEX_FP_CONSTANTS )
 endif ()
 
 check_cxx_source_compiles (
   "int main() { int x = 0b101011; }"
   HAVE_BINARY_CONSTANTS )
 if ( HAVE_BINARY_CONSTANTS )
-  target_compile_definitions ( pbrt PRIVATE -D PBRT_HAVE_BINARY_CONSTANTS )
+  target_compile_definitions ( pbrt PUBLIC -D PBRT_HAVE_BINARY_CONSTANTS )
 endif ()
 
 check_cxx_source_compiles (
   "int main() { constexpr int x = 0; }"
   HAVE_CONSTEXPR )
 if ( HAVE_CONSTEXPR )
-  target_compile_definitions ( pbrt PRIVATE -D PBRT_HAVE_CONSTEXPR )
-  target_compile_definitions ( pbrt PRIVATE -D PBRT_CONSTEXPR=constexpr )
+  target_compile_definitions ( pbrt PUBLIC -D PBRT_HAVE_CONSTEXPR )
+  target_compile_definitions ( pbrt PUBLIC -D PBRT_CONSTEXPR=constexpr )
 ELSE ()
-  target_compile_definitions ( pbrt PRIVATE -D PBRT_CONSTEXPR=const )
+  target_compile_definitions ( pbrt PUBLIC -D PBRT_CONSTEXPR=const )
 endif ()
 
 check_cxx_source_compiles (
   "struct alignas(32) Foo { char x; }; int main() { }"
   HAVE_ALIGNAS )
 if ( HAVE_ALIGNAS )
-  target_compile_definitions ( pbrt PRIVATE -D PBRT_HAVE_ALIGNAS )
+  target_compile_definitions ( pbrt PUBLIC -D PBRT_HAVE_ALIGNAS )
 endif ()
 
 check_cxx_source_compiles (
   "int main() { int x = alignof(double); }"
   HAVE_ALIGNOF )
 if ( HAVE_ALIGNOF )
-  target_compile_definitions ( pbrt PRIVATE -D PBRT_HAVE_ALIGNOF )
+  target_compile_definitions ( pbrt PUBLIC -D PBRT_HAVE_ALIGNOF )
 endif ()
 
 check_cxx_source_runs ( "
@@ -76,7 +76,7 @@ int main() {
 }
 " HAVE_ITIMER )
 if ( HAVE_ITIMER )
-  target_compile_definitions ( pbrt PRIVATE -D PBRT_HAVE_ITIMER )
+  target_compile_definitions ( pbrt PUBLIC -D PBRT_HAVE_ITIMER )
 endif()
 
 check_cxx_source_compiles ( "
@@ -85,7 +85,7 @@ struct Foo { union { int x[10]; Bar b; }; Foo() : b() { } };
 int main() { Foo f; }
 " HAVE_NONPOD_IN_UNIONS )
 if ( HAVE_NONPOD_IN_UNIONS )
-  target_compile_definitions ( pbrt PRIVATE -D PBRT_HAVE_NONPOD_IN_UNIONS )
+  target_compile_definitions ( pbrt PUBLIC -D PBRT_HAVE_NONPOD_IN_UNIONS )
 endif ()
 
 check_cxx_source_compiles ( "
@@ -103,7 +103,7 @@ int main() {
 }
 " HAVE_MMAP )
 if ( HAVE_MMAP )
-  target_compile_definitions ( pbrt PRIVATE -D PBRT_HAVE_MMAP )
+  target_compile_definitions ( pbrt PUBLIC -D PBRT_HAVE_MMAP )
 endif ()
 
 ########################################
@@ -120,14 +120,14 @@ int main() { }"
 HAVE_ATTRIBUTE_NOINLINE )
 
 if ( HAVE_ATTRIBUTE_NOINLINE )
-  target_compile_definitions ( pbrt PRIVATE -D "PBRT_NOINLINE=__attribute__((noinline))" )
+  target_compile_definitions ( pbrt PUBLIC -D "PBRT_NOINLINE=__attribute__((noinline))" )
   #add_definitions(-D "PBRT_NOINLINE=__attribute__\\(\\(noinline\\)\\)" )
 ELSEIF ( HAVE_DECLSPEC_NOINLINE )
   #add_definitions(-D "PBRT_NOINLINE=__declspec(noinline)")
-  target_compile_definitions ( pbrt PRIVATE -D "PBRT_NOINLINE=__declspec(noinline)" )
+  target_compile_definitions ( pbrt PUBLIC -D "PBRT_NOINLINE=__declspec(noinline)" )
 ELSE ()
    #add_definitions( -D PBRT_NOINLINE )
-   target_compile_definitions ( pbrt PRIVATE -D PBRT_NOINLINE )
+   target_compile_definitions ( pbrt PUBLIC -D PBRT_NOINLINE )
 endif ()
 
 ########################################
@@ -152,11 +152,11 @@ int main() {
 } " HAVE_MEMALIGN )
 
 if ( HAVE__ALIGNED_MALLOC )
-  target_compile_definitions ( pbrt PRIVATE -D PBRT_HAVE__ALIGNED_MALLOC )
+  target_compile_definitions ( pbrt PUBLIC -D PBRT_HAVE__ALIGNED_MALLOC )
 ELSEIF ( HAVE_POSIX_MEMALIGN )
-  target_compile_definitions ( pbrt PRIVATE -D PBRT_HAVE_POSIX_MEMALIGN )
+  target_compile_definitions ( pbrt PUBLIC -D PBRT_HAVE_POSIX_MEMALIGN )
 ELSEIF ( HAVE_MEMALIGN )
-  target_compile_definitions ( pbrt PRIVATE -D PBRTHAVE_MEMALIGN )
+  target_compile_definitions ( pbrt PUBLIC -D PBRTHAVE_MEMALIGN )
 ELSE ()
   MESSAGE ( SEND_ERROR "Unable to find a way to allocate aligned memory" )
 endif ()
@@ -181,11 +181,11 @@ __thread int x; int main() { }
 " HAVE___THREAD )
 
 if ( HAVE_THREAD_LOCAL )
-  target_compile_definitions ( pbrt PRIVATE -D PBRT_THREAD_LOCAL=thread_local )
+  target_compile_definitions ( pbrt PUBLIC -D PBRT_THREAD_LOCAL=thread_local )
 ELSEIF ( HAVE___THREAD )
-  target_compile_definitions ( pbrt PRIVATE -D PBRT_THREAD_LOCAL=__thread )
+  target_compile_definitions ( pbrt PUBLIC -D PBRT_THREAD_LOCAL=__thread )
 ELSEIF ( HAVE_DECLSPEC_THREAD )
-  target_compile_definitions ( pbrt PRIVATE -D "PBRT_THREAD_LOCAL=__declspec(thread)" )
+  target_compile_definitions ( pbrt PUBLIC -D "PBRT_THREAD_LOCAL=__declspec(thread)" )
 ELSE ()
   MESSAGE ( SEND_ERROR "Unable to find a way to declare a thread-local variable")
 endif ()
