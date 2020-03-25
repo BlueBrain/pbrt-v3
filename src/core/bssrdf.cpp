@@ -302,7 +302,16 @@ Spectrum SeparableBSSRDF::Sample_Sp(const Scene &scene, Float u1,
     // Accumulate chain of intersections along ray
     IntersectionChain *ptr = chain;
     int nFound = 0;
+
+    // Limit the max subsurf tests due lack of precission for SDFs
+    // causing an infinite loop (scene.Intersect always returns true)
+#ifdef PBRT_MAX_SSS_HIT_TESTS
+    int counter = 0;
+    constexpr int maxTests = 64;
+    while(counter++ < maxTests) {
+#else
     while (true) {
+#endif
         Ray r = base.SpawnRayTo(pTarget);
         if (r.d == Vector3f(0, 0, 0) || !scene.Intersect(r, &ptr->si))
             break;

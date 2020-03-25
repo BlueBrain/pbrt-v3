@@ -311,6 +311,12 @@ if (PBRT_SAMPLED_SPECTRUM)
   target_compile_definitions( pbrt PRIVATE -D PBRT_SAMPLED_SPECTRUM )
 endif()
 
+# Required for SDF gemetries lack of precission
+option(PBRT_MAX_SSS_HIT_TESTS "Limit number of scene intersection tests for subsurface materials" ON)
+if (PBRT_MAX_SSS_HIT_TESTS)
+  target_compile_definitions( pbrt PRIVATE -D PBRT_MAX_SSS_HIT_TESTS )
+endif()
+
 # HARDCODED DYNAMIC OPTIONS
 include(PbrtAddDefinitions)
 
